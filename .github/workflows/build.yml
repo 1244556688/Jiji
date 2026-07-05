@@ -28,20 +28,19 @@ jobs:
             plymouth-themes \
             debian-archive-keyring
 
-      - name: Clean previous build
+      - name: Configure live-build
         run: |
-          sudo lb clean --purge || true
-
-      - name: Configure live-build (FIXED DEBIAN SOURCE)
-        run: |
-          sudo lb config \
+            sudo lb clean --purge || true
+            sudo lb config \
             --mode debian \
             --distribution bookworm \
             --archive-areas "main contrib non-free-firmware" \
-            --mirror-bootstrap http://deb.debian.org/debian \
-            --mirror-chroot http://deb.debian.org/debian \
-            --binary-images iso-hybrid
+            --binary-images iso-hybrid name: Clean previous build
+      
+            run: |
+             sudo lb clean --purge || true
 
+      
       - name: Build ISO
         run: |
           sudo lb build
