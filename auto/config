@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# Configures live-build with minimal stable settings for Debian 12 Bookworm.
+# Sets bootappend parameters to enable Plymouth boot splash theme 'justinos'.
+# Security mirror disabled (--security false) to avoid Debian 12 bookworm/updates mirror mismatch bugs.
+lb config noauto \
+    --distribution "bookworm" \
+    --archive-areas "main contrib non-free-firmware" \
+    --binary-images "iso-hybrid" \
+    --architectures "amd64" \
+    --security false \
+    --bootappend-live "boot=live components quiet splash plymouth.theme=justinos plymouth.ignore-serial-consoles locales=en_US.UTF-8 keyboard-layouts=us" \
+    "${@}"

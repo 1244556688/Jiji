@@ -1,0 +1,88 @@
+# config/includes.chroot/usr/share/plymouth/themes/justinos/justinos.script
+# Justin OS Plymouth theme script - Windows 11 Loading Dots Inspired.
+
+# Retrieve screen width and height
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+# Load Logo Image and set sprite
+logo.image = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+
+# Center logo horizontally and vertically (offset slightly upwards for loader space)
+logo.x = (screen_width - logo.image.GetWidth()) / 2;
+logo.y = (screen_height - logo.image.GetHeight()) / 2 - 80;
+logo.sprite.SetX(logo.x);
+logo.sprite.SetY(logo.y);
+logo.sprite.SetOpacity(1.0);
+
+# Set custom text label "Justin OS"
+# (Some systems fallback if text render fails, so a logo image with integrated text is recommended)
+# However, we can also define a text label or draw one.
+# Here we initialize the loading dots variables.
+DOT_COUNT = 5;
+dot_sprites = [];
+dot_images = [];
+
+# Create 5 glowing dots
+for (i = 0; i < DOT_COUNT; i++) {
+  # Load the simple circle dot.png (if separate) or draw using Plymouth canvas if possible.
+  # For ease of installation, we will use a small glowing dot image from the folder.
+  dot_images[i] = Image("dot.png");
+  dot_sprites[i] = Sprite(dot_images[i]);
+  dot_sprites[i].SetOpacity(0.0);
+}
+
+# Parameters for circular rotation wave (Windows 11 style)
+# Dots rotate around a center pivot or oscillate in wave form.
+pivot_x = screen_width / 2;
+pivot_y = screen_height / 2 + 60; # Below logo
+radius = 18; # Oscillation / path radius
+time_counter = 0;
+
+fun refresh_callback() {
+  time_counter += 0.04;
+  
+  # Update each of the 5 dots
+  for (i = 0; i < DOT_COUNT; i++) {
+    # Phase delay for wave effect
+    phase = i * 0.45;
+    t = time_counter - phase;
+    
+    # Smooth speed changes / acceleration to mimic Windows 11 chase look
+    angle = t * 1.8;
+    
+    # Calculate screen position
+    # Rotates around pivot_x, pivot_y with acceleration
+    dot_x = pivot_x + Math.Cos(angle) * radius - (dot_images[i].GetWidth() / 2);
+    dot_y = pivot_y + Math.Sin(angle) * (radius / 2) - (dot_images[i].GetHeight() / 2);
+    
+    # Opacity fades in and out as a wave
+    opacity = Math.Sin(t * 1.2) * 0.7 + 0.3;
+    if (opacity < 0.0) opacity = 0.0;
+    if (opacity > 1.0) opacity = 1.0;
+    
+    dot_sprites[i].SetX(dot_x);
+    dot_sprites[i].SetY(dot_y);
+    dot_sprites[i].SetOpacity(opacity);
+  }
+}
+
+# Set refresh callback
+Plymouth.SetRefreshFunction(refresh_callback);
+
+# Handle boot progress and status changes
+fun progress_callback(duration, progress) {
+  # Opacity of system can change with progress if desired
+}
+Plymouth.SetBootProgressFunction(progress_callback);
+
+# Handle quit / transition out
+fun quit_callback() {
+  # Transition out smoothly
+  logo.sprite.SetOpacity(0.0);
+  for (i = 0; i < DOT_COUNT; i++) {
+    dot_sprites[i].SetOpacity(0.0);
+  }
+}
+Plymouth.SetQuitFunction(quit_callback);

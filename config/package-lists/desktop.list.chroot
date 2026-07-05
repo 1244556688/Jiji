@@ -1,0 +1,23 @@
+# Core system utilities
+plymouth
+plymouth-themes
+systemd
+systemd-sysv
+kmod
+
+# Display server & minimal GUI (Optional)
+# If you want a GUI, uncomment the following:
+# xserver-xorg-core
+# xinit
+# openbox
+# menu
+
+# Useful Command-Line Tools
+neofetch
+htop
+curl
+wget
+git
+tmux
+nano
+sudo

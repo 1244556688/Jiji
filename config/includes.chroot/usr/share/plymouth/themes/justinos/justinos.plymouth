@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Justin OS Boot Screen
+Description=Minimal, modern, premium fade-loading boot experience.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/justinos
+ScriptFile=/usr/share/plymouth/themes/justinos/justinos.script

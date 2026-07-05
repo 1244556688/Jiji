@@ -1,0 +1,60 @@
+# .github/workflows/build.yml
+name: Build Justin OS Live ISO
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    name: Build Justin OS Debian Live ISO
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            live-build \
+            debootstrap \
+            xorriso \
+            squashfs-tools \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            plymouth \
+            plymouth-themes \
+            systemd-container
+
+      - name: Initialize live-build Config
+        run: |
+          # Make sure scripts are executable
+          chmod +x auto/config || true
+          
+          # Run live-build configuration
+          lb config
+
+      - name: Build ISO
+        run: |
+          # Run live-build using sudo (required for mount & chroot operations)
+          sudo lb build
+
+      - name: Verify ISO Build
+        run: |
+          # Check if the ISO was created successfully
+          if [ -f *.iso ]; then
+            echo "ISO file built successfully:"
+            ls -lh *.iso
+          else
+            echo "ERROR: ISO build failed. File not found."
+            exit 1
+          fi
+
+      - name: Upload Bootable ISO Artifact
+        uses: actions/actions-artifact@v4
+        with:
+          name: justin-os-live-amd64
+          path: "*.iso"
+          if-no-files-found: error
