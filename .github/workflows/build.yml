@@ -7,17 +7,19 @@ on:
 
 jobs:
   build-iso:
-    name: Build Justin OS Debian Live ISO
     runs-on: ubuntu-24.04
 
     steps:
+      # =========================
+      # Checkout
+      # =========================
       - name: Checkout repository
         uses: actions/checkout@v4
 
       # =========================
       # Install dependencies
       # =========================
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -32,26 +34,29 @@ jobs:
             debian-archive-keyring
 
       # =========================
-      # Clean previous build
+      # Clean previous builds
       # =========================
       - name: Clean live-build
         run: |
           sudo lb clean --purge || true
 
       # =========================
-      # Configure live-build (FIXED)
+      # Configure live-build (FIXED EVERYTHING)
       # =========================
       - name: Configure live-build
         run: |
-          sudo rm -f /etc/apt/sources.list
+          # 💥 kill all broken apt sources (VERY IMPORTANT)
+          sudo rm -f /etc/apt/sources.list || true
           sudo rm -f /etc/apt/sources.list.d/*.list || true
-          
+
+          # 💥 configure live-build cleanly
           sudo lb config \
             --mode debian \
             --distribution bookworm \
             --archive-areas "main contrib non-free-firmware" \
             --mirror-bootstrap http://deb.debian.org/debian \
             --mirror-chroot http://deb.debian.org/debian \
+            --security-mirror http://deb.debian.org/debian-security \
             --binary-images iso-hybrid \
             --apt-recommends false \
             --apt-secure true
@@ -64,18 +69,18 @@ jobs:
           sudo lb build
 
       # =========================
-      # Check output
+      # Verify output
       # =========================
-      - name: List output files
+      - name: List generated files
         run: |
-          echo "Generated files:"
-          ls -lah || true
+          echo "ISO output:"
           find . -maxdepth 2 -type f -name "*.iso" || true
+          ls -lah || true
 
       # =========================
-      # Upload ISO artifact (FIXED)
+      # Upload artifact (FIXED)
       # =========================
-      - name: Upload ISO artifact
+      - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
           name: justin-os-live-iso
