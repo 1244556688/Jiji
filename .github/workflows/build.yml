@@ -11,10 +11,13 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Build Dependencies
+      # =========================
+      # Install dependencies
+      # =========================
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -28,35 +31,50 @@ jobs:
             plymouth-themes \
             debian-archive-keyring
 
+      # =========================
+      # Clean previous build
+      # =========================
+      - name: Clean live-build
+        run: |
+          sudo lb clean --purge || true
+
+      # =========================
+      # Configure live-build (FIXED)
+      # =========================
       - name: Configure live-build
         run: |
-         sudo lb clean --purge || true
+          sudo lb config \
+            --mode debian \
+            --distribution bookworm \
+            --archive-areas "main contrib non-free-firmware" \
+            --mirror-bootstrap http://deb.debian.org/debian \
+            --mirror-chroot http://deb.debian.org/debian \
+            --binary-images iso-hybrid \
+            --apt-recommends false \
+            --apt-secure true
 
-         sudo lb config \
-         --mode debian \
-         --distribution bookworm \
-         --archive-areas "main contrib non-free-firmware" \
-         --mirror-bootstrap http://deb.debian.org/debian \
-         --mirror-chroot http://deb.debian.org/debian \
-         --binary-images iso-hybrid \
-         --apt-recommends false \
-         --apt-secure true \
-         --apt-indices false 
-
-      
+      # =========================
+      # Build ISO
+      # =========================
       - name: Build ISO
         run: |
           sudo lb build
 
-      - name: List generated files
+      # =========================
+      # Check output
+      # =========================
+      - name: List output files
         run: |
-          ls -lh || true
-          find . -maxdepth 2 -name "*.iso" -o -name "*.img" || true
+          echo "Generated files:"
+          ls -lah || true
+          find . -maxdepth 2 -type f -name "*.iso" || true
 
-      - name: Upload ISO Artifact
+      # =========================
+      # Upload ISO artifact (FIXED)
+      # =========================
+      - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: justin-os-live-amd64
-          path: |
-            *.iso
+          name: justin-os-live-iso
+          path: "*.iso"
           if-no-files-found: error
