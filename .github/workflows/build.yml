@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install dependencies
@@ -21,22 +21,12 @@ jobs:
             grub-pc-bin grub-efi-amd64-bin \
             plymouth plymouth-themes systemd-container
 
-      - name: Clean previous build
+      - name: Clean build (safe)
         run: |
           sudo lb clean --purge || true
           rm -rf config/chroot config/binary config/bootstrap || true
 
-      - name: Fix APT sources (safe method)
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-
-          echo "deb http://deb.debian.org/debian bookworm main contrib non-free-firmware" | sudo tee /etc/apt/sources.list
-          echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware" | sudo tee -a /etc/apt/sources.list
-          echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware" | sudo tee -a /etc/apt/sources.list
-
-          cat /etc/apt/sources.list
-
-      - name: Configure live-build
+      - name: Configure live-build (stable mode)
         run: |
           lb config \
             --mode debian \
@@ -53,11 +43,11 @@ jobs:
         run: |
           sudo lb build
 
-      - name: List output files
+      - name: Check ISO
         run: |
-          ls -lh
+          ls -lh *.iso || true
 
-      - name: Upload ISO artifact
+      - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
           name: justin-os-iso
