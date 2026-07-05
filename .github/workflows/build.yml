@@ -1,4 +1,3 @@
-# .github/workflows/build.yml
 name: Build Justin OS Live ISO
 
 on:
@@ -10,6 +9,7 @@ jobs:
   build-iso:
     name: Build Justin OS Debian Live ISO
     runs-on: ubuntu-24.04
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,35 +26,35 @@ jobs:
             grub-efi-amd64-bin \
             plymouth \
             plymouth-themes \
-            systemd-container
+            debian-archive-keyring
 
-      - name: Initialize live-build Config
+      - name: Clean previous build
         run: |
-          # Make sure scripts are executable
-          chmod +x auto/config || true
-          
-          # Run live-build configuration
-          lb config
+          sudo lb clean --purge || true
+
+      - name: Configure live-build (FIXED DEBIAN SOURCE)
+        run: |
+          sudo lb config \
+            --mode debian \
+            --distribution bookworm \
+            --archive-areas "main contrib non-free-firmware" \
+            --mirror-bootstrap http://deb.debian.org/debian \
+            --mirror-chroot http://deb.debian.org/debian \
+            --binary-images iso-hybrid
 
       - name: Build ISO
         run: |
-          # Run live-build using sudo (required for mount & chroot operations)
           sudo lb build
 
-      - name: Verify ISO Build
+      - name: List generated files
         run: |
-          # Check if the ISO was created successfully
-          if [ -f *.iso ]; then
-            echo "ISO file built successfully:"
-            ls -lh *.iso
-          else
-            echo "ERROR: ISO build failed. File not found."
-            exit 1
-          fi
+          ls -lh || true
+          find . -maxdepth 2 -name "*.iso" -o -name "*.img" || true
 
-      - name: Upload Bootable ISO Artifact
+      - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
         with:
           name: justin-os-live-amd64
-          path: "*.iso"
+          path: |
+            *.iso
           if-no-files-found: error
