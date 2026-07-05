@@ -30,20 +30,18 @@ jobs:
 
       - name: Configure live-build
         run: |
-          sudo lb clean --purge || true
-          sudo lb config \
-          --mode debian \
-          --distribution bookworm \
-          --archive-areas "main contrib non-free-firmware" \
-          --mirror-bootstrap http://deb.debian.org/debian \
-          --mirror-chroot http://deb.debian.org/debian \
-          --binary-images iso-hybrid \
-          --apt-recommends false \
-          --apt-secure true
-          --apt-indices false
-            
-            run: |
-             sudo lb clean --purge || true
+         sudo lb clean --purge || true
+
+         sudo lb config \
+         --mode debian \
+         --distribution bookworm \
+         --archive-areas "main contrib non-free-firmware" \
+         --mirror-bootstrap http://deb.debian.org/debian \
+         --mirror-chroot http://deb.debian.org/debian \
+         --binary-images iso-hybrid \
+         --apt-recommends false \
+         --apt-secure true \
+         --apt-indices false 
 
       
       - name: Build ISO
