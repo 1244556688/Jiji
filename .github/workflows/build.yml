@@ -43,6 +43,9 @@ jobs:
       # =========================
       - name: Configure live-build
         run: |
+          sudo rm -f /etc/apt/sources.list
+          sudo rm -f /etc/apt/sources.list.d/*.list || true
+          
           sudo lb config \
             --mode debian \
             --distribution bookworm \
