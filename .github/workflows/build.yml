@@ -53,7 +53,7 @@ jobs:
           fi
 
       - name: Upload Bootable ISO Artifact
-        uses: actions/actions-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: justin-os-live-amd64
           path: "*.iso"
