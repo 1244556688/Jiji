@@ -1,4 +1,4 @@
-name: Build Justin OS (Ultimate Stable)
+name: Build Justin OS Live ISO
 
 on:
   push:
@@ -13,7 +13,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🧼 1. 安裝環境（乾淨）
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -22,40 +21,36 @@ jobs:
             grub-pc-bin grub-efi-amd64-bin \
             plymouth plymouth-themes systemd-container
 
-      # 🧼 2. 絕對不碰 apt sources（關鍵）
-      - name: Clean build environment
+      - name: Clean previous build
         run: |
           sudo lb clean --purge || true
-          rm -rf config/chroot config/binary config/bootstrap || true
+          rm -rf config || true
 
-      # ⚙️ 3. live-build（完全交給 LB 管 APT）
-      - name: Configure live-build
+      - name: Configure live-build (STABLE)
         run: |
-          lb config \
+          sudo lb config \
             --mode debian \
             --distribution bookworm \
             --archive-areas "main contrib non-free-firmware" \
             --mirror-bootstrap http://deb.debian.org/debian \
             --mirror-chroot http://deb.debian.org/debian \
+            --security-mirror http://deb.debian.org/debian-security \
             --binary-images iso-hybrid \
             --apt-recommends false \
             --apt-secure true \
             --apt-indices false
 
-      # 🔥 4. build
       - name: Build ISO
         run: |
           sudo lb build
 
-      # 📦 5. output check
       - name: List ISO
         run: |
           ls -lh *.iso || true
 
-      # 📤 6. upload artifact
-      - name: Upload ISO
+      - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: justin-os-ultimate
+          name: justin-os-iso
           path: "*.iso"
           if-no-files-found: error
