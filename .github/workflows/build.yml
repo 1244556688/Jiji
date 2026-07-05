@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install dependencies
@@ -26,14 +26,15 @@ jobs:
           sudo lb clean --purge || true
           rm -rf config/chroot config/binary config/bootstrap || true
 
-      - name: FIX APT SOURCES (IMPORTANT)
+      - name: Fix APT sources (safe method)
         run: |
           sudo rm -f /etc/apt/sources.list.d/*
-          sudo bash -c 'cat > /etc/apt/sources.list' << 'EOF'
-deb http://deb.debian.org/debian bookworm main contrib non-free-firmware
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware
-deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
-EOF
+
+          echo "deb http://deb.debian.org/debian bookworm main contrib non-free-firmware" | sudo tee /etc/apt/sources.list
+          echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware" | sudo tee -a /etc/apt/sources.list
+          echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware" | sudo tee -a /etc/apt/sources.list
+
+          cat /etc/apt/sources.list
 
       - name: Configure live-build
         run: |
@@ -52,9 +53,9 @@ EOF
         run: |
           sudo lb build
 
-      - name: List ISO
+      - name: List output files
         run: |
-          ls -lh *.iso || true
+          ls -lh
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
