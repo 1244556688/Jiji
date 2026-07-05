@@ -40,7 +40,7 @@ jobs:
           --binary-images iso-hybrid \
           --apt-recommends false \
           --apt-secure true
-      
+          --apt-indices false
             run: |
              sudo lb clean --purge || true
 
