@@ -11,6 +11,7 @@ kmod
 # xinit
 # openbox
 # menu
+# intentionally empty to override default auto sources
 
 # Useful Command-Line Tools
 neofetch
